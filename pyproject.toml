@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "model-initialization-ulwinds"
-version = "0.1.0"
-description = "Global 300-hPa model initialization verification against radiosondes."
+version = "0.2.0"
+description = "Global 300-hPa model initialization wind and height verification against radiosondes."
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}
@@ -14,6 +14,7 @@ dependencies = [
   "numpy>=1.26",
   "pandas>=2.1",
   "scipy>=1.11",
+  "contourpy>=1.2",
   "xarray>=2024.1",
   "requests>=2.31",
   "cfgrib>=0.9.14",
