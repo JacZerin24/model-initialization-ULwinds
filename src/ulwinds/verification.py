@@ -229,6 +229,7 @@ def station_records(verified: pd.DataFrame) -> list[dict[str, object]]:
             "vertical_method": str(row.get("vertical_method", "unknown")),
             "observation_time": str(row.get("observation_time", "")),
             "metadata_source": str(row.get("metadata_source", "unknown")),
+            "profile_source": str(row.get("profile_source", "unknown")),
         }
         for column in numeric_columns:
             value = row.get(column)
