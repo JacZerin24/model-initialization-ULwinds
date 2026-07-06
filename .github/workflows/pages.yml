@@ -1,0 +1,91 @@
+name: Build and deploy dashboard
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - "src/**"
+      - "pyproject.toml"
+      - ".github/workflows/pages.yml"
+  schedule:
+    - cron: "20 6,18 * * *"
+  workflow_dispatch:
+    inputs:
+      cycle:
+        description: "Optional UTC cycle (YYYYMMDDHH); blank selects a safely lagged cycle"
+        required: false
+        type: string
+      strict:
+        description: "Fail if any model source is unavailable"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        if: github.event_name != 'push'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install ecCodes runtime
+        if: github.event_name != 'push'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libeccodes0
+
+      - name: Install project
+        if: github.event_name != 'push'
+        run: pip install -e .
+
+      - name: Build live verification dataset
+        if: github.event_name != 'push'
+        env:
+          INPUT_CYCLE: ${{ inputs.cycle }}
+          INPUT_STRICT: ${{ inputs.strict }}
+        run: |
+          args=(--output site/data/latest.json)
+          if [[ -n "$INPUT_CYCLE" ]]; then
+            args+=(--cycle "$INPUT_CYCLE")
+          fi
+          if [[ "$INPUT_STRICT" == "true" ]]; then
+            args+=(--strict)
+          fi
+          python -m ulwinds.cli "${args[@]}"
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload dashboard artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

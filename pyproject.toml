@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "model-initialization-ulwinds"
+version = "0.1.0"
+description = "Global 300-hPa model initialization verification against radiosondes."
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [{name = "JacZerin24"}]
+dependencies = [
+  "numpy>=1.26",
+  "pandas>=2.1",
+  "scipy>=1.11",
+  "xarray>=2024.1",
+  "requests>=2.31",
+  "cfgrib>=0.9.14",
+  "eccodes>=2.38",
+  "ecmwf-opendata>=0.3",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+
+[project.scripts]
+ulwinds = "ulwinds.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
