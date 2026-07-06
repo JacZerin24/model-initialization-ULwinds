@@ -10,7 +10,7 @@ from .config import MODEL_LABELS, MODEL_ORDER, ensure_parent, parse_cycle, valid
 from .demo import build_demo_payload
 from .models import FETCHERS
 from .observations import fetch_raob_300
-from .verification import sample_wind_vectors, station_records, summarize, verify_stations
+from .verification import analysis_payload, station_records, summarize, verify_stations
 
 LOG = logging.getLogger("ulwinds")
 
@@ -52,7 +52,7 @@ def run_live(cycle, models: list[str], work_dir: Path, strict: bool) -> dict[str
                 "source": field.source,
                 "status": "ok",
                 "metrics": summarize(verified),
-                "vectors": sample_wind_vectors(field),
+                "analysis": analysis_payload(field),
                 "stations": station_records(verified),
             }
             LOG.info("%s verified at %d stations", field.label, len(verified))
@@ -65,7 +65,7 @@ def run_live(cycle, models: list[str], work_dir: Path, strict: bool) -> dict[str
                 "status": "error",
                 "error": str(exc),
                 "metrics": {"n": 0},
-                "vectors": [],
+                "analysis": None,
                 "stations": [],
             }
 
@@ -73,14 +73,19 @@ def run_live(cycle, models: list[str], work_dir: Path, strict: bool) -> dict[str
         raise RuntimeError(f"{failures} of {len(models)} model retrievals failed")
 
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "demo": False,
         "generated_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "cycle": cycle.isoformat().replace("+00:00", "Z"),
         "level_hpa": 300,
         "models": model_payload,
+        "observation_summary": {
+            "station_count": int(len(observations)),
+            "metadata_sources": observations["metadata_source"].value_counts().to_dict(),
+        },
         "notes": [
-            "The comparison uses each model's step-0/f000 300-hPa wind and nominal-cycle RAOB observations.",
+            "Wind speed is displayed as a filled scalar field with 300-hPa geopotential-height contours every 12 dam.",
+            "International station locations are matched through NOAA/NCEI's IGRA inventory; IEM metadata remains preferred for U.S. ICAO stations.",
             "This measures initialization fit, not independent forecast skill; many RAOBs may have been assimilated.",
         ],
     }
@@ -92,14 +97,11 @@ def main() -> None:
         level=getattr(logging, args.log_level),
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
-
     if args.demo:
         _write(build_demo_payload(), args.output)
         return
-
     cycle = validate_cycle(parse_cycle(args.cycle))
-    payload = run_live(cycle, args.models, args.work_dir, args.strict)
-    _write(payload, args.output)
+    _write(run_live(cycle, args.models, args.work_dir, args.strict), args.output)
 
 
 if __name__ == "__main__":
