@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Global 300-hPa model initialization wind verification against radiosondes.">
+  <meta name="description" content="Global 300-hPa model initialization wind and height verification against radiosondes.">
   <title>300-hPa Initialization Verification</title>
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -13,75 +13,68 @@
   <header class="site-header">
     <div>
       <p class="eyebrow">Global upper-air verification</p>
-      <h1>300-hPa Model Initialization Winds</h1>
-      <p class="subtitle">GFS, ECMWF IFS, and Canadian GDPS compared with radiosonde observations.</p>
+      <h1>300-hPa Model Initialization</h1>
+      <p class="subtitle">Filled wind speed and geopotential-height contours from GFS, ECMWF IFS, and Canadian GDPS, verified against worldwide radiosondes.</p>
     </div>
     <div class="cycle-card" aria-live="polite">
       <span>Verification cycle</span>
       <strong id="cycle-label">Loading…</strong>
       <small id="generated-label"></small>
+      <small id="coverage-label"></small>
     </div>
   </header>
 
   <main>
     <section class="toolbar" aria-label="Map controls">
       <div id="model-tabs" class="model-tabs" role="tablist" aria-label="Select model"></div>
-      <label class="toggle">
-        <input id="vector-toggle" type="checkbox" checked>
-        <span>Show initialized wind vectors</span>
-      </label>
+      <div class="layer-toggles">
+        <label class="toggle"><input id="wind-toggle" type="checkbox" checked><span>Wind-speed shading</span></label>
+        <label class="toggle"><input id="height-toggle" type="checkbox" checked><span>300-hPa heights</span></label>
+      </div>
     </section>
 
     <section id="notice" class="notice" hidden></section>
 
     <section class="metrics" aria-label="Verification metrics">
-      <article class="metric-card">
-        <span>RAOB matches</span>
-        <strong id="metric-n">—</strong>
-      </article>
-      <article class="metric-card">
-        <span>Mean absolute error</span>
-        <strong id="metric-mae">—</strong>
-      </article>
-      <article class="metric-card">
-        <span>Speed bias</span>
-        <strong id="metric-bias">—</strong>
-      </article>
-      <article class="metric-card">
-        <span>Vector RMSE</span>
-        <strong id="metric-vector-rmse">—</strong>
-      </article>
+      <article class="metric-card"><span>Worldwide RAOB matches</span><strong id="metric-n">—</strong></article>
+      <article class="metric-card"><span>Wind MAE</span><strong id="metric-mae">—</strong></article>
+      <article class="metric-card"><span>Wind-speed bias</span><strong id="metric-bias">—</strong></article>
+      <article class="metric-card"><span>Vector RMSE</span><strong id="metric-vector-rmse">—</strong></article>
+      <article class="metric-card"><span>Height MAE</span><strong id="metric-height-mae">—</strong></article>
     </section>
 
     <section class="map-shell">
-      <div id="map" role="application" aria-label="Global 300-hPa wind verification map"></div>
+      <div id="map" role="application" aria-label="Global 300-hPa wind and height verification map"></div>
       <aside class="legend-panel" aria-label="Map legends">
+        <div class="legend-block wind-legend">
+          <h2>Initialized 300-hPa wind speed</h2>
+          <div class="wind-gradient" aria-hidden="true"></div>
+          <div class="gradient-ticks"><span>0</span><span>30</span><span>60</span><span>90</span><span>120</span><span>150+ kt</span></div>
+        </div>
         <div class="legend-block">
-          <h2>RAOB absolute speed error</h2>
+          <h2>RAOB absolute wind error</h2>
           <div><i class="dot err-0"></i><span>0–5 kt</span></div>
           <div><i class="dot err-1"></i><span>5–10 kt</span></div>
           <div><i class="dot err-2"></i><span>10–20 kt</span></div>
           <div><i class="dot err-3"></i><span>20–30 kt</span></div>
           <div><i class="dot err-4"></i><span>30+ kt</span></div>
         </div>
-        <div class="legend-block">
-          <h2>Initialized wind speed</h2>
-          <div><i class="line wind-0"></i><span>&lt;50 kt</span></div>
-          <div><i class="line wind-1"></i><span>50–90 kt</span></div>
-          <div><i class="line wind-2"></i><span>90–130 kt</span></div>
-          <div><i class="line wind-3"></i><span>130+ kt</span></div>
+        <div class="legend-block height-key">
+          <h2>300-hPa geopotential height</h2>
+          <div><i class="height-line"></i><span>12-dam contours</span></div>
+          <div><i class="height-line major"></i><span>24-dam emphasized</span></div>
         </div>
       </aside>
     </section>
 
     <section class="method-note">
       <h2>How to read the map</h2>
-      <p>The arrows depict each model's step-0/f000 300-hPa wind. Radiosonde dots are colored by absolute wind-speed error. Select a dot for observed and modeled wind speed, signed bias, direction error, and vector error.</p>
+      <p>The filled field is each model's initialized 300-hPa wind speed. Black labeled contours are initialized 300-hPa geopotential heights in decameters. Radiosonde dots are colored and sized by absolute wind-speed error; select a dot for observed and modeled winds, heights, and detailed errors.</p>
     </section>
   </main>
 
   <footer>
-    <span>Initialization fit is not independent forecast skill; many RAOB observations may be assimilated by the models.</span>
+    <span>Initialization fit is not independent forecast skill; radiosonde observations may have been assimilated by the models.</span>
     <a href="https://github.com/JacZerin24/model-initialization-ULwinds">View source on GitHub</a>
   </footer>
 
