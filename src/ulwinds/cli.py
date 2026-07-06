@@ -73,7 +73,7 @@ def run_live(cycle, models: list[str], work_dir: Path, strict: bool) -> dict[str
         raise RuntimeError(f"{failures} of {len(models)} model retrievals failed")
 
     return {
-        "schema_version": 2,
+        "schema_version": 3,
         "demo": False,
         "generated_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "cycle": cycle.isoformat().replace("+00:00", "Z"),
@@ -82,10 +82,11 @@ def run_live(cycle, models: list[str], work_dir: Path, strict: bool) -> dict[str
         "observation_summary": {
             "station_count": int(len(observations)),
             "metadata_sources": observations["metadata_source"].value_counts().to_dict(),
+            "profile_sources": observations["profile_source"].value_counts().to_dict(),
         },
         "notes": [
-            "Wind speed is displayed as a filled scalar field with 300-hPa geopotential-height contours every 12 dam.",
-            "International station locations are matched through NOAA/NCEI's IGRA inventory; IEM metadata remains preferred for U.S. ICAO stations.",
+            "U.S. profiles come from the IEM RAOB archive; active non-U.S. WMO profiles are retrieved from the University of Wyoming global archive.",
+            "The build fails rather than publishing a U.S.-only dataset when too few international profiles are available.",
             "This measures initialization fit, not independent forecast skill; many RAOBs may have been assimilated.",
         ],
     }
